@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>foogadgets SLink tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+	<h1>SLink tool</h1>
+	<p>
+  <form>
+      <button type=button id="recordSpotify">Auto record list on Spotify</button>
+      <button type=button id="populateToc">Populate TOC from Spotify</button>
+	  <input type="hidden" id="spoturi" size="42">
+  </form>
+	<p>
+  <form>
+      <b>Length:</b>
+      <input type="radio" name="mdLen" value="60">60m
+      <input type="radio" name="mdLen" value="74" checked>74m
+      <input type="radio" name="mdLen" value="80">80m
+      <input type="radio" name="mdLen" value="999">inf.
+  </form>
+	<p>
+  <form>
+      <b>Table of contents</b><br>
+      <input type="text" id="album" size="64" required placeholder="Artist name - Album name"></input>
+      <br>
+
+      <textarea id="songs" cols="55" rows="15" required placeholder="Song titles" wrap="hard"></textarea>
+
+      <br><b>Number of tracks: </b><label id="numberOfTracks"></label>
+      <br><b>Total playtime: </b><label id="playTime"></label>
+
+      <br><br>
+      <button type="button" id="writeTocMd">Write TOC to MiniDisc</button>
+      <tr>
+      <button type="button" id="clearToc">Clear TOC</button>
+
+      <br><br><b>Album/Playlist image: </b><br><img id="imageUrl" src="">
+  </form>
+      <br><br>
+
+      <a href="http://slinktool.local/login">Spotify login</a>  
+
+      <br><br>
+      <footer>
+          <p><b>&copy; foogadgets 2021</b></p>
+      </footer>
+
+      <script>
+        HEPPELEPPE;
+      </script>
+
+  </body>
+</html>
