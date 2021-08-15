@@ -1,25 +1,31 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>foogadgets SLink tool</title>
+    <title>foogadgets SLink Tool</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      GURKMAJO
+    </style>
   </head>
   <body>
-	<h1>SLink tool</h1>
+<div class="content">
+	<h1>SLink Tool</h1>
 	<p>
   <form>
-      <button type=button id="recordSpotify">Auto record list on Spotify</button>
+      <button type=button id="recordSpotify">Auto record from Spotify</button>
       <button type=button id="populateToc">Populate TOC from Spotify</button>
 	  <input type="hidden" id="spoturi" size="42">
   </form>
 	<p>
   <form>
-      <b>Length:</b>
+      <b>MD length:</b>
       <input type="radio" name="mdLen" value="60">60m
       <input type="radio" name="mdLen" value="74" checked>74m
       <input type="radio" name="mdLen" value="80">80m
-      <input type="radio" name="mdLen" value="999">inf.
+      <input type="radio" name="mdLen" value="999">No limit
   </form>
+      <b>Number of tracks: </b><label id="numberOfTracks"></label><br>
+      <b>Total playtime: </b><label id="playTime"></label>
 	<p>
   <form>
       <b>Table of contents</b><br>
@@ -28,15 +34,11 @@
 
       <textarea id="songs" cols="55" rows="15" required placeholder="Song titles" wrap="hard"></textarea>
 
-      <br><b>Number of tracks: </b><label id="numberOfTracks"></label>
-      <br><b>Total playtime: </b><label id="playTime"></label>
-
       <br><br>
       <button type="button" id="writeTocMd">Write TOC to MiniDisc</button>
       <tr>
       <button type="button" id="clearToc">Clear TOC</button>
 
-      <br><br><b>Album/Playlist image: </b><br><img id="imageUrl" src="">
   </form>
       <br><br>
 
@@ -50,6 +52,11 @@
       <script>
         HEPPELEPPE;
       </script>
+</div>
+
+<div class="graphics">
+      <b>Album/Playlist image: </b><br><img id="imageUrl" src="">
+</div>
 
   </body>
 </html>
