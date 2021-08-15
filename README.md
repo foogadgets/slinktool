@@ -71,6 +71,10 @@ Build and upload sketch to your LOLIN.
 ## SLink hardware interface
 Schematics,
 ![alt text](screenshots/SLink_interface.png "As implemented by Sony")
+
+The module mounted on the LOLIN D1,
+![alt text](screenshots/SLink_module.jpg "SLink module")
+
 For a bare PCB module that fits LOLIN module, please contact me at, https://www.facebook.com/foogadgets
 
 ## Using SLink Tool
