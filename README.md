@@ -1,4 +1,5 @@
 # SLink Tool
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 Recording robot to record from Spotify to Sony MiniDisc recorders featuring S-Link port.
 
