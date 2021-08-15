@@ -68,11 +68,15 @@ Build and flash to LOLIN(WEMOS) D1.
 
 Build and upload sketch to your LOLIN.
 
+## SLink hardware interface
+Schematics,
+![alt text](screenshots/SLink_interface.png "As implemented by Sony")
+For a bare PCB module that fits LOLIN module, please contact me at, https://www.facebook.com/foogadgets
 
 ## Using SLink Tool
 
 Browse to http://slinktool.local/  
-Main page:  
+Main page,  
 ![alt text](screenshots/main_page.png "Main page")
 
 To be able to extract album and track data and to sync recordings from
