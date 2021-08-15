@@ -60,7 +60,7 @@ Search for esp and install esp8266
 
 Go to Tools -> Board -> ESP8266 Boards -> LOLIN(WEMOS) D1 R2 & mini
 
-(på OS X behöver man installera egen python3. Det gjorde jag med hjälp av Homebrew. Homebrew kräver dessutom Java JDK samt att jag behövde justera patén till python3 i espressif i filen platform.txt)
+(på OS X behöver man installera egen python3. Det gjorde jag med hjälp av Homebrew. Homebrew kräver dessutom Java JDK samt att jag behövde justera sökvägen till python3 i espressif i filen platform.txt)
 
 Update the wifi credentials in Credentials.h
 
@@ -79,8 +79,7 @@ Browse to http://slinktool.local/
 Main page,  
 ![alt text](screenshots/main_page.png "Main page")
 
-To be able to extract album and track data and to sync recordings from
-Spotify you need to be a Spotify Premium user.
+To be able to automatically populate album and track data and to automatically record from Spotify you need to be a Spotify Premium user.
 
 Login on this page, https://developer.spotify.com/dashboard/login
 
