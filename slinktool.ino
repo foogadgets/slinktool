@@ -27,7 +27,7 @@ WiFiClientSecure client;
 ArduinoSpotify spotify(client);
 Slink slink;
 SpotifyDevice* myDevices;
-static MusicAlbumTOC myToc;
+static MusicAlbumTOC myTOC;
 
 static const char* hostName = "slinktool";
 static const char *callbackUri = "http%3A%2F%2Fslinktool.local%2Fcallback";
@@ -54,8 +54,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     case WStype_TEXT: {
         switch (payload[0]) {
           case '0': { // PKG RECV Album name
-              myToc.clearToc();
-              myToc.setAlbumName((char*)&payload[1]);
+              myTOC.clearToc();
+              if(!myTOC.setAlbumName((char*)&payload[1])) { Serial.println("setAlbum failed!"); }
             }
             break;
           case '1': { // PKG RECV Track names
@@ -63,7 +63,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
               char endMarker[] = "\r\n";
               pch = strtok((char*)&payload[1], endMarker);
               while (pch != NULL) {
-                myToc.addTrack(pch);
+                myTOC.addTrack(pch);
                 pch = strtok(NULL, endMarker);
               }
             }
@@ -74,7 +74,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
               uint8_t i = 1;
               pch = strtok((char*)&payload[1], endMarker);
               while (pch != NULL) {
-                myToc.setTrackDuration( i++, atol(pch) );
+                myTOC.setTrackDuration( i++, atol(pch) );
                 pch = strtok(NULL, endMarker);
               }
               webSocket.sendTXT(0, "m:recvMDToc");
@@ -225,6 +225,7 @@ loop() {
   switch (stateToken) {
     case 3: // Auto record from Spotify
       {
+        trackDurationIndex = 1;
         myDevices = spotify.scanDevices();
         Serial.println("  Spotify:\tPausing Spotify.");
         spotify.pause(myDevices->id);
@@ -239,7 +240,7 @@ loop() {
 
         Serial.println("MiniDisc:\tStart recording");
         delay(150);
-        trackMarkTime = myToc.getTrackDuration(trackDurationIndex++) + millis();
+        trackMarkTime = myTOC.getTrackDuration(trackDurationIndex++) + millis();
         spotify.setVolume(100, myDevices->id);
         slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_PLAY);
         stateToken = 5; // Start to send track marks
@@ -248,14 +249,15 @@ loop() {
     case 5:
       {
         if (millis() > trackMarkTime) {
-          if (trackDurationIndex > (myToc.getNoTracks())) {
+          if (trackDurationIndex > (myTOC.getNoTracks())) {
             slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_STOP);
+            Serial.println("Recording done!");
             trackDurationIndex = 1;
             stateToken = 0;
           } else {
             slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_REC_PAUSE);
+            trackMarkTime = myTOC.getTrackDuration(trackDurationIndex++) + millis();
           }
-          trackMarkTime = myToc.getTrackDuration(trackDurationIndex++) + millis();
         }
         break;
       }
@@ -264,28 +266,30 @@ loop() {
         Serial.println("-- Writing TOC to MiniDisc --");
         Serial.println("------------ Album -----------");
         // Write Disk Title
-        Serial.println(myToc.getAlbumName());
-        if(!slink.writeDiskTitle( myToc.getAlbumName() )) {
+        Serial.println(myTOC.getAlbumName());
+        if (!slink.writeDiskTitle( myTOC.getAlbumName() )) {
           Serial.println("!! Failed to write Album name");
           break;
         }
         // Write Song Titles
         Serial.println("------------ Songs -----------");
-        for (uint8_t i = 0; i < myToc.getNoTracks(); i++) {
-          Serial.println(myToc.getTrackName(i + 1));
-          if(!slink.writeTrackTitle( i + 1, myToc.getTrackName(i + 1) )) {
+        for (uint8_t i = 1; i <= myTOC.getNoTracks(); i++) {
+          Serial.print(myTOC.getTrackName(i));
+          Serial.print(": ");
+          Serial.println(myTOC.getTrackDuration(i));
+          if (!slink.writeTrackTitle( i, myTOC.getTrackName(i) )) {
             Serial.print("!! Failed to write title number ");
-            Serial.println(i+1);
+            Serial.println(i);
             break;
           }
         }
-        Serial.printf("------------\nNumber of tracks: %d\n\n", myToc.getNoTracks());
+        Serial.printf("------------\nNumber of tracks: %d\n\n", myTOC.getNoTracks());
         stateToken = 0;
         break;
       }
     case 7:
       {
-        Serial.println("Checking if Tocken need refresh.");
+        Serial.println("Checking if Token need refresh.");
         spotify.checkAndRefreshAccessToken();
         sendTokens();
         stateToken = 0;
