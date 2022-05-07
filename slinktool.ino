@@ -205,7 +205,7 @@ setup() {
     server.send_P(200, "text/html", index_html);
   });
 
-  client.setFingerprint(SPOTIFY_FINGERPRINT);
+  client.setInsecure();
 
   server.on("/login", handleLogin);
   server.on("/callback", handleCallback);
