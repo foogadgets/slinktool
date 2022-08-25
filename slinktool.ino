@@ -54,7 +54,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     case WStype_TEXT: {
         switch (payload[0]) {
           case '0': { // PKG RECV Album name
-              myTOC.clearToc();
+              myTOC.clearTOC();
               if(!myTOC.setAlbumName((char*)&payload[1])) { Serial.println("setAlbum failed!"); }
             }
             break;
@@ -246,10 +246,10 @@ loop() {
         stateToken = 5; // Start to send track marks
         break;
       }
-    case 5:
-      {
+    case 5: // Setting track marks according to spotify track length since this is more
+      {     // reliable than letting new track detection in the MD recorder do it.
         if (millis() > trackMarkTime) {
-          if (trackDurationIndex > (myTOC.getNoTracks())) {
+          if (trackDurationIndex > myTOC.getNoTracks()) {
             slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_STOP);
             Serial.println("Recording done!");
             trackDurationIndex = 1;

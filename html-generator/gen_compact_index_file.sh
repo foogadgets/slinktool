@@ -13,9 +13,10 @@ TMPFILE='mktemp' || exit 1
 printf "static const char login_template[] PROGMEM = R\"rawliteral(" >> ../webpages.h
 cat http/main_base_ip_arduino.js > $TMPFILE
 cat src/login.js >> $TMPFILE
-awk '/HEPPELEPPE/{system("cat '$TMPFILE'");next}1' http/loginTemplate.html | tr -d '\011\012\015' | tr -s " " >> ../webpages.h
+awk '/GURKMAJO/{system("cat 'http/layout.css'");next}1' http/loginTemplate.html >> webpage.tmp
+awk '/HEPPELEPPE/{system("cat '$TMPFILE'");next}1' webpage.tmp | tr -d '\011\012\015' | tr -s " " >> ../webpages.h
 printf ")rawliteral\";\n" >> ../webpages.h
-rm -rf $TMPFILE
+rm -rf $TMPFILE webpage.tmp
 printf "static const char login_next[] PROGMEM = R\"rawliteral(" >> ../webpages.h
 cat http/loginCont.html | tr -d '\011\012\015' | tr -s " " >> ../webpages.h
 printf ")rawliteral\";\n" >> ../webpages.h
