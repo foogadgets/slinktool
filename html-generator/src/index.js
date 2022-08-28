@@ -112,6 +112,7 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
+            var maxPlayTime = (( (document.querySelector('input[name="mdLen"]:checked').value)*(document.querySelector('input[name="mdLP"]:checked').value) *60+59)*1000);
             document.getElementById('album').value = data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
@@ -121,8 +122,8 @@ function populateToc() {
               document.getElementById('songs').value += data.body.tracks.items[i].track.name + ' - ' +
                 data.body.tracks.items[i].track.artists[0].name + '\n';
               playTime += data.body.tracks.items[i].track.duration_ms;
-			  localStorage.albumTimes += data.body.tracks.items[i].track.duration_ms.toString() + ';';
-			  if (playTime > (( (document.querySelector('input[name="mdLen"]:checked').value) *60+59)*1000)) { noTracks=i+1;break; }
+              localStorage.albumTimes += data.body.tracks.items[i].track.duration_ms.toString() + ';';
+              if (playTime > maxPlayTime) { noTracks=i+1;break; }
             };
             document.getElementById('playTime').innerHTML = msToTime(playTime);
             document.getElementById('numberOfTracks').innerHTML = noTracks;
@@ -139,6 +140,7 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
+            var maxPlayTime = (( (document.querySelector('input[name="mdLen"]:checked').value)*(document.querySelector('input[name="mdLP"]:checked').value) *60+59)*1000);
             document.getElementById('album').value = data.body.artists[0].name + ' - ' + data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
@@ -146,8 +148,8 @@ function populateToc() {
             for (i = 0; i < noTracks; i++) { /* Iterate over all tracks */
               document.getElementById('songs').value += data.body.tracks.items[i].name + '\n';
               playTime += data.body.tracks.items[i].duration_ms;
-			  localStorage.albumTimes += data.body.tracks.items[i].duration_ms.toString() + ';';
-			  if (playTime > (( (document.querySelector('input[name="mdLen"]:checked').value) *60+59)*1000)) { noTracks=i+1;break; }
+              localStorage.albumTimes += data.body.tracks.items[i].duration_ms.toString() + ';';
+              if (playTime > maxPlayTime) { noTracks=i+1;break; }
             };
             document.getElementById('playTime').innerHTML = msToTime(playTime);
             document.getElementById('numberOfTracks').innerHTML = noTracks;

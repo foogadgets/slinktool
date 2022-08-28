@@ -17,24 +17,15 @@ function handleRequest(request) {
 	  console.log('spotify.pause()');
 	  setTimeout(() => { console.log('spotify.seek(0);'); }, 800);
 	  setTimeout(() => { console.log('spotify.setVolume(100);'); }, 1600);
-/*
-        spotify.pause();
-        setTimeout(() => {  spotify.seek(0); }, 500);
-        setTimeout(() => {  spotify.setVolume(100); }, 1000);
-*/
       break;
     case "2":
 	  console.log('handleRequest function: Autorecord PLAY');
 	  console.log('spotify.play()');
-/*
-        spotify.play();
-*/
       break;
     default:
       console.log('handleRequest function: Default');
   }
 };
-
 
 
 /* Test button */
@@ -45,20 +36,6 @@ function testFunc() {
 };
 
 document.getElementById("writeTocMd").addEventListener("click",function() {
-/*
-  var artistAlbum = document.getElementById('album').value;
-  var       songs = document.getElementById('songs').value;
-  var   mdPresent = document.getElementById('md').checked;
-
-  var jsonBlob = ('{ "album": "' + artistAlbum + '", "tracks": [' + songs + '], "mdpres": "'+ mdPresent +'" }');
-*/
-/* {  "album": "Artist - Album",  "tracks": [ { "name":  "trackname" }, { "name":  "trackname" }, ], "mdpres":  "true" } */
-/*
-  console.log('Artist-Album:  ' +  artistAlbum);
-  console.log('Songs: '  + songs);
-  console.log('mdPresent:  ' +  mdPresent);
-  console.log('jsonBlob: ' + jsonBlob);
-*/
   if ("" !== document.getElementById('album').value && "" !== document.getElementById('songs').value) {
     connection.send('0' + document.getElementById('album').value);
     connection.send('1' + document.getElementById('songs').value);
