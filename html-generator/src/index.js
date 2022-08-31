@@ -112,15 +112,19 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
-            var maxPlayTime = (( (document.querySelector('input[name="mdLen"]:checked').value)*(document.querySelector('input[name="mdLP"]:checked').value) *60+59)*1000);
+            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value)*60+59)*(document.querySelector('input[name="mdLP"]:checked').value)*1000);
             document.getElementById('album').value = data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
             noTracks = data.body.tracks.total;
             if (noTracks > 100) { noTracks = 100; };
             for (i = 0; i < noTracks; i++) { /* iterate all tracks */
-              document.getElementById('songs').value += data.body.tracks.items[i].track.name + ' - ' +
-                data.body.tracks.items[i].track.artists[0].name + '\n';
+              document.getElementById('songs').value += data.body.tracks.items[i].track.name;
+              if ((document.querySelector('input[name="mdLP"]:checked').value) == 1) {
+                document.getElementById('songs').value += ' - ' +
+                  data.body.tracks.items[i].track.artists[0].name;
+              }
+              document.getElementById('songs').value += '\n';
               playTime += data.body.tracks.items[i].track.duration_ms;
               localStorage.albumTimes += data.body.tracks.items[i].track.duration_ms.toString() + ';';
               if (playTime > maxPlayTime) { noTracks=i+1;break; }
@@ -140,7 +144,7 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
-            var maxPlayTime = (( (document.querySelector('input[name="mdLen"]:checked').value)*(document.querySelector('input[name="mdLP"]:checked').value) *60+59)*1000);
+            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value)*60+59)*(document.querySelector('input[name="mdLP"]:checked').value)*1000);
             document.getElementById('album').value = data.body.artists[0].name + ' - ' + data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
@@ -176,7 +180,7 @@ function storeToLocalStore() {
 
 function sendMDToc() {
   connection.send('0' + document.getElementById('album').value);
-  setTimeout(function(){ connection.send('1' + document.getElementById('songs').value);}, 500);
+  setTimeout(function(){ connection.send('1' + document.getElementById('songs').value); }, 500);
   setTimeout(function(){ connection.send('2' + localStorage.albumTimes);
   console.log('Sent Album, tracks and track duration.'); }, 1500);
 };

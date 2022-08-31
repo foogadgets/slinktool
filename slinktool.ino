@@ -55,15 +55,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         switch (payload[0]) {
           case '0': { // PKG RECV Album name
               myTOC.clearTOC();
-              if(!myTOC.setAlbumName((char*)&payload[1])) { Serial.println("setAlbum failed!"); }
+              uint8_t returnStatus = myTOC.setAlbumName((char*)&payload[1]);
+              if(returnStatus != 0) { Serial.print("setAlbum failed! Error: "); Serial.println(returnStatus); }
             }
             break;
           case '1': { // PKG RECV Track names
+              uint8_t returnStatus = 0;
               char *pch;
               char endMarker[] = "\r\n";
               pch = strtok((char*)&payload[1], endMarker);
               while (pch != NULL) {
-                myTOC.addTrack(pch);
+                returnStatus = myTOC.addTrack(pch);
+                if(returnStatus != 0) { Serial.print("addTrack "); Serial.print(myTOC.getNoTracks()); Serial.print(" failed! Error: "); Serial.println(returnStatus); }
                 pch = strtok(NULL, endMarker);
               }
             }
@@ -267,7 +270,7 @@ loop() {
         Serial.println("------------ Album -----------");
         // Write Disk Title
         Serial.println(myTOC.getAlbumName());
-        if (!slink.writeDiskTitle( myTOC.getAlbumName() )) {
+        if (!slink.writeDiskTitle( myTOC.getAlbumName())) {
           Serial.println("!! Failed to write Album name");
           break;
         }
