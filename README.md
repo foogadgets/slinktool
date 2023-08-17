@@ -2,6 +2,9 @@
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 Recording robot to record from Spotify to Sony MiniDisc recorders featuring S-Link port.
+An ESP8266 is used to serve the control web interface that take care of coordinating the start/stop/naming of the tracks.
+
+An album or playlist can easily be recorded to an MD including the naming of the tracks/titles with just a few button clicks.
 
 ----
 
