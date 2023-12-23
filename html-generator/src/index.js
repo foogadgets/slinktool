@@ -35,14 +35,17 @@ function handleRequest(request) {
   switch (state) {
     case 'p':
       console.log("spotify.play");
-          spotifyApi.play({
-  "context_uri": document.getElementById('spoturi').value,
-  "offset": { "position": 0 }, "position_ms": 0 })
-            .then(function () {
-              console.log('Spotify Play requested -------');
-            }, function (err) {
-              console.log('Something went wrong!', err);
-            });
+      spotifyApi.play({
+        "context_uri": document.getElementById('spoturi').value,
+        "offset": {
+          "position": 0
+        },
+        "position_ms": 0
+      }).then(function () {
+        console.log('Spotify Play requested -------');
+      }, function (err) {
+        console.log('Something went wrong!', err);
+      });
       break;
     case 't':
       sessionStorage.accessToken = payload;
@@ -51,6 +54,8 @@ function handleRequest(request) {
       populateToc();
       break;
     case 'm':
+      console.log('TOC writing status: ');
+      console.log(payload);
       switch (funcToken) {
         case 1:
           connection.send('3');
@@ -60,27 +65,31 @@ function handleRequest(request) {
           connection.send('4');
           funcToken = 0;
           break;
-	  }
+        default:
+      }
+      break;
+    case 'x':
+      console.log('Done Recording to MD with reason ', payload);
       break;
     default:
       console.log('handleRequest function: Default');
   }
-};
+}
 
 
 function writeTocToMd() {
-  if ("" !== document.getElementById('album').value && "" !== document.getElementById('songs').value) {
+  if (document.getElementById('album').value !== "" && document.getElementById('songs').value !== "") {
     funcToken = 2;
     sendMDToc();
   }
-};
+}
 document.getElementById('writeTocMd').addEventListener('click', writeTocToMd, false);
 
 
 function recordSpotify() {
   funcToken = 1;
   renewAccessToken();
-};
+}
 document.getElementById('recordSpotify').addEventListener('click', recordSpotify, false);
 
 
@@ -95,7 +104,7 @@ function msToTime(s) {
 
 function renewAccessToken() {
   connection.send('7');/* token renewal */
-};
+}
 document.getElementById('populateToc').addEventListener('click', renewAccessToken, false);
 
 
@@ -112,12 +121,12 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
-            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value)*60+59)*(document.querySelector('input[name="mdLP"]:checked').value)*1000);
+            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value) * 60 + 59) * (document.querySelector('input[name="mdLP"]:checked').value) * 1000);
             document.getElementById('album').value = data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
             noTracks = data.body.tracks.total;
-            if (noTracks > 100) { noTracks = 100; };
+            if (noTracks > 100) { noTracks = 100; }
             for (i = 0; i < noTracks; i++) { /* iterate all tracks */
               document.getElementById('songs').value += data.body.tracks.items[i].track.name;
               if ((document.querySelector('input[name="mdLP"]:checked').value) == 1) {
@@ -127,8 +136,8 @@ function populateToc() {
               document.getElementById('songs').value += '\n';
               playTime += data.body.tracks.items[i].track.duration_ms;
               localStorage.albumTimes += data.body.tracks.items[i].track.duration_ms.toString() + ';';
-              if (playTime > maxPlayTime) { noTracks=i+1;break; }
-            };
+              if (playTime > maxPlayTime) { noTracks = i + 1; break; }
+            }
             document.getElementById('playTime').innerHTML = msToTime(playTime);
             document.getElementById('numberOfTracks').innerHTML = noTracks;
             storeToLocalStore();
@@ -144,7 +153,7 @@ function populateToc() {
           function (data) {
             var playTime = 0;
             var noTracks = 0;
-            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value)*60+59)*(document.querySelector('input[name="mdLP"]:checked').value)*1000);
+            var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value) * 60 + 59) * (document.querySelector('input[name="mdLP"]:checked').value) * 1000);
             document.getElementById('album').value = data.body.artists[0].name + ' - ' + data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
             document.getElementById('imageUrl').src = data.body.images[0].url;
@@ -153,8 +162,8 @@ function populateToc() {
               document.getElementById('songs').value += data.body.tracks.items[i].name + '\n';
               playTime += data.body.tracks.items[i].duration_ms;
               localStorage.albumTimes += data.body.tracks.items[i].duration_ms.toString() + ';';
-              if (playTime > maxPlayTime) { noTracks=i+1;break; }
-            };
+              if (playTime > maxPlayTime) { noTracks = i + 1; break; }
+            }
             document.getElementById('playTime').innerHTML = msToTime(playTime);
             document.getElementById('numberOfTracks').innerHTML = noTracks;
             storeToLocalStore();
@@ -163,27 +172,27 @@ function populateToc() {
             console.error(err);
           }
         );
-      };
+      }
       sendMDToc();
     },
     function (err) {
       console.log('Something went wrong!', err);
     }
   );
-};
+}
 
 function storeToLocalStore() {
   localStorage.slinktoolTracks = document.getElementById('songs').value;
   localStorage.slinktoolNumberOfTracks = document.getElementById('numberOfTracks').innerHTML;
   localStorage.slinktoolPlayTime = document.getElementById('playTime').innerHTML;
-};
+}
 
 function sendMDToc() {
   connection.send('0' + document.getElementById('album').value);
-  setTimeout(function(){ connection.send('1' + document.getElementById('songs').value); }, 500);
-  setTimeout(function(){ connection.send('2' + localStorage.albumTimes);
-  console.log('Sent Album, tracks and track duration.'); }, 1500);
-};
+  setTimeout(function () { connection.send('1' + document.getElementById('songs').value); }, 500);
+  setTimeout(function () { connection.send('2' + localStorage.albumTimes); }, 2500);
+  console.log('Sent Album, tracks and track duration.');
+}
 
 function clearToc() {
   document.getElementById('album').value = "";
@@ -196,5 +205,11 @@ function clearToc() {
   localStorage.slinktoolNumberOfTracks = document.getElementById('numberOfTracks').innerHTML;
 
   console.log('TOC cleared');
-};
+}
 document.getElementById('clearToc').addEventListener('click', clearToc, false);
+
+function interruptRec() {
+  connection.send('8');
+  console.log('Recording interrupted');
+}
+document.getElementById('stopRec').addEventListener('click', interruptRec, false);

@@ -11,13 +11,13 @@ connection.onerror = function (error) {
 connection.onmessage = function (e) {
   var state = e.data.split(':')[0];
   var payload = e.data.split(':')[1];
-  switch(state) {
+  switch (state) {
     case 'r':
       sessionStorage.refreshToken = payload;
-     break;
+      break;
     case 't':
       sessionStorage.accessToken = payload;
-     break;
+      break;
     default:
       console.log('handleRequest function: Default');
   }
@@ -26,8 +26,7 @@ connection.onmessage = function (e) {
 document.getElementById('clid').value = localStorage.clientID;
 document.getElementById('clse').value = localStorage.clientSecret;
 
-function registerCredentials()
-{
+function registerCredentials() {
   localStorage.clientID = document.getElementById('clid').value;
   localStorage.clientSecret = document.getElementById('clse').value;
 

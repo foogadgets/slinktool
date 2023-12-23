@@ -25,13 +25,14 @@
       <input type="radio" name="mdLP" value="4">LP4
   </form>
 	<div class="albuminfo">
-      <b>Number of tracks: </b><label id="numberOfTracks"></label><br>
-      <b>Total playtime: </b><label id="playTime"></label>
+      <b>Number of tracks: </b><label id="numberOfTracks" for="numberOfTracks"></label><br>
+      <b>Total playtime: </b><label id="playTime" for="playTime"></label>
 	</div>
 	<p>
   <form>
       <b>3.</b> <button type=button id="populateToc">Populate TOC from Spotify</button><p>
       <b>4.</b> <button type=button id="recordSpotify">Auto record from Spotify</button>
+                <button type=button id="stopRec">Interrupt Recording</button>
 	  <input type="hidden" id="spoturi" size="42">
   </form>
 	<p>
@@ -63,7 +64,7 @@
       <b>Album/Playlist image: </b><br><img id="imageUrl" src="">
 
       <div class=bottomleft>
-          <b>&copy; foogadgets 2021</b>
+          <b>&copy; foogadgets 2024</b>
       </div>
 
 </div>

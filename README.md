@@ -51,6 +51,12 @@ Install node.js environment for the slink project
  $> ./gen_compact_index_file.sh
  $> cd ..
 ```
+Note that the following commands need to be run after any change in the JS- or HTML-files.
+```
+ $> npm run build
+ $> ./gen_compact_index_file.sh
+```
+
   
 Start Arduino IDE and open slinktool.ino  
 
