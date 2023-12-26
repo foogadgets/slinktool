@@ -1,11 +1,19 @@
+#include <WiFiManager.h>
+#include <strings_en.h>
+#include <wm_consts_en.h>
+#include <wm_strings_en.h>
+#include <wm_strings_es.h>
+
 #include <Arduino.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ESP8266mDNS.h>
 #include <WebSocketsServer.h>
 #include <ESP8266WebServer.h>
+#include <WiFiManager.h>  // https://github.com/tzapu/WiFiManager
 
 #include <ArduinoJson.h>
 #include <ArduinoSpotify.h>
@@ -15,24 +23,23 @@
 #include "Credentials.h"
 #include "webpages.h"
 
-
-#define SLINK_INPIN 5 // GPIO5 (D1)
-#define SLINK_OUTPIN 4 // GPIO4 (D2)
-#define SERIAL_COM_PORT_SPEED 115200UL // 115 kbps
+#define SLINK_INPIN 5                   // GPIO5 (D1)
+#define SLINK_OUTPIN 4                  // GPIO4 (D2)
+#define SERIAL_COM_PORT_SPEED 115200UL  // 115 kbps
 #define SIZEOFTEMP 560
 
 ESP8266WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
-WiFiClientSecure client;
-ArduinoSpotify spotify(client);
+WiFiClientSecure WiFiClient;
+ArduinoSpotify spotify(WiFiClient);
 Slink slink;
-SpotifyDevice* myDevices;
+SpotifyDevice *myDevices;
 static MusicAlbumTOC myTOC;
 
-static const char* hostName = "slinktool";
+static const char *hostName = "slinktool";
 static const char *callbackUri = "http%3A%2F%2Fslinktool.local%2Fcallback";
 static uint8_t stateToken = 0;
-static char tmpBuf[SIZEOFTEMP]; // big buffer for misc. use.
+static char tmpBuf[SIZEOFTEMP];  // big buffer for misc. use.
 static uint8_t trackDurationIndex = 1;
 static unsigned long trackMarkTime = 0;
 
@@ -42,7 +49,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       Serial.printf("[%u] Disconnected!\n", num);
       break;
 
-    case WStype_CONNECTED: {
+    case WStype_CONNECTED:
+      {
         IPAddress ip = webSocket.remoteIP(num);
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
 
@@ -51,68 +59,107 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       }
       break;
 
-    case WStype_TEXT: {
+    case WStype_TEXT:
+      {
         switch (payload[0]) {
-          case '0': { // PKG RECV Album name
-              myTOC.clearTOC();
-              uint8_t returnStatus = myTOC.setAlbumName((char*)&payload[1]);
-              if(returnStatus != 0) { Serial.print("setAlbum failed! Error: "); Serial.println(returnStatus); }
-            }
-            break;
-          case '1': { // PKG RECV Track names
-              uint8_t returnStatus = 0;
-              char *pch;
-              char endMarker[] = "\r\n";
-              pch = strtok((char*)&payload[1], endMarker);
-              while (pch != NULL) {
-                returnStatus = myTOC.addTrack(pch);
-                if(returnStatus != 0) { Serial.print("addTrack "); Serial.print(myTOC.getNoTracks()); Serial.print(" failed! Error: "); Serial.println(returnStatus); }
-                pch = strtok(NULL, endMarker);
-              }
-            }
-            break;
-          case '2': { // PKG RECV Track duration
-              char *pch;
-              char endMarker[] = ";";
+          case '0':
+            {
+              uint8_t tocStatus = 0;
               uint8_t i = 1;
-              pch = strtok((char*)&payload[1], endMarker);
-              while (pch != NULL) {
-                myTOC.setTrackDuration( i++, atol(pch) );
-                pch = strtok(NULL, endMarker);
+              char *pch;
+              char endMarker[2] = { 0 };
+              endMarker[0] = '\x1c';
+              myTOC.clearTOC();
+              pch = strtok((char *)&payload[1], endMarker);
+              tocStatus = myTOC.setAlbumName(pch);
+              if (tocStatus != 0) {
+                Serial.print("setAlbumName failed! Error: ");
+                Serial.println(tocStatus);
+              } else {
+                Serial.print("Album: ");
+                Serial.println(pch);
               }
-              webSocket.sendTXT(0, "m:recvMDToc");
+// ALBUM(0x1c)TRACK(0x1c)LENGTH(0x1c) ... TRACK(0x1c)LENGTH(0x1c)
+// Read track name
+              pch = strtok(NULL, endMarker);
+              while (pch != NULL) {
+                tocStatus = myTOC.addTrack(pch);
+                if (tocStatus != 0) {
+                  Serial.print("addTrack ");
+                  Serial.print(myTOC.getNoTracks());
+                  Serial.print(" failed! Error: ");
+                  Serial.println(tocStatus);
+                  break;
+                } else {
+                  Serial.print("Title: ");
+                  Serial.print(pch);
+                }
+// Read track duration
+                pch = strtok(NULL, endMarker);
+                tocStatus = myTOC.setTrackDuration(i, atol(pch));
+                if (tocStatus != 0) {
+                  Serial.print("getNoTracks(): ");
+                  Serial.println(myTOC.getNoTracks());
+                  Serial.print("setTrackDuration track ");
+                  Serial.print(i);
+                  Serial.print(" failed! Error: ");
+                  Serial.println(tocStatus);
+                  break;
+                } else {
+                  Serial.print(", Duration: ");
+                  Serial.println(atol(pch));
+                }
+                pch = strtok(NULL, endMarker);
+                i++;
+              }
             }
             break;
-          case '3': { // PKG RECV Recording trigger
+          case '3':
+            {  // PKG RECV Recording trigger
               Serial.println("~~~~~~~~~~~~~ Autorecording from Spotify ~~~~~~~~~~~~~");
               stateToken = 3;
             }
             break;
-          case '4': { // PKG RECV Write to MD
+          case '4':
+            {  // PKG RECV Write to MD
               stateToken = 4;
             }
             break;
-          case '5': { // PKG RECV with ClientID
-              spotify.setClientId((char*)&payload[1]);
+          case '5':
+            {  // PKG RECV with ClientID
+              spotify.setClientId((char *)&payload[1]);
             }
             break;
-          case '6': { // PKG RECV with ClientSecret
-              spotify.setClientSecret((char*)&payload[1]);
+          case '6':
+            {  // PKG RECV with ClientSecret
+              spotify.setClientSecret((char *)&payload[1]);
             }
             break;
-          case '7': { // PKG RECV with Token renewal check trigger
+          case '7':
+            {  // PKG RECV with Token renewal check trigger
               Serial.println("~~~ Checking for token renewal ~~~");
               stateToken = 7;
             }
             break;
+          case '8':
+            {  // In case we are in stateToken=5 (recording) we interrupt that process.
+              slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_STOP);
+              Serial.println("Interrupting recording.");
+              trackDurationIndex = 1;
+              stateToken = 0;
+              webSocket.sendTXT(0, "x:Recording interrupted.");
+            }
+            break;
           default:
             break;
-        }
+        } // switch(payload[0])
       }
+      break;
+
+    default:
       break;
   }
 }
-
 
 void sendTokens() {
   memset(tmpBuf, 0, SIZEOFTEMP * sizeof(char));
@@ -120,7 +167,6 @@ void sendTokens() {
   strncat(tmpBuf, spotify.getAccessToken(), (SIZEOFTEMP - 1 - 2));
   webSocket.sendTXT(0, tmpBuf);
 }
-
 
 void handleLogin() {
   server.send_P(200, "text/html", login_template);
@@ -144,9 +190,8 @@ void handleCallback() {
   }
 }
 
-
 void handleNotFound() {
-  memset(tmpBuf, 0, sizeof(char)*SIZEOFTEMP);
+  memset(tmpBuf, 0, sizeof(char) * SIZEOFTEMP);
   strncpy(tmpBuf, "--File Not Found ->\n", 22);
   strncat(tmpBuf, "\tURI: ", 8);
   strcat(tmpBuf, server.uri().c_str());
@@ -164,9 +209,7 @@ void handleNotFound() {
   server.send(404, "text/plain", tmpBuf);
 }
 
-
-void
-setup() {
+void setup() {
   Serial.begin(SERIAL_COM_PORT_SPEED);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -180,6 +223,8 @@ setup() {
     Serial.print(".");
     delay(500);
   }
+
+  WiFiClient.setInsecure();
 
   Serial.println();
   Serial.println("WiFi connected");
@@ -197,18 +242,15 @@ setup() {
     Serial.println(".local");
   }
 
-  slink.init(SLINK_INPIN, SLINK_OUTPIN); // Set-up S-Link pin
+  slink.init(SLINK_INPIN, SLINK_OUTPIN);  // Set-up S-Link pin
   Serial.print("S-Link input pin ");
   Serial.println(slink.inPin());
   Serial.print("S-Link output pin ");
   Serial.println(slink.outPin());
 
-
   server.on("/", []() {
     server.send_P(200, "text/html", index_html);
   });
-
-  client.setInsecure();
 
   server.on("/login", handleLogin);
   server.on("/callback", handleCallback);
@@ -221,56 +263,56 @@ setup() {
   MDNS.addService("ws", "tcp", 81);
 }
 
-
-void
-loop() {
+void loop() {
 
   switch (stateToken) {
-    case 3: // Auto record from Spotify
+    case 3:  // Auto record from Spotify
       {
         trackDurationIndex = 1;
         myDevices = spotify.scanDevices();
         Serial.println("  Spotify:\tPausing Spotify.");
         spotify.pause(myDevices->id);
         spotify.setVolume(0, myDevices->id);
-        delay(2000); // delay between each command
+        delay(2000);  // delay between each command
         Serial.println("MiniDisc:\tPrepare recording. Pressing REC & PAUSE");
         slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_REC_PAUSE);
-        delay(2000); // delay between each command
+        delay(2000);  // delay between each command
 
         Serial.println("  Spotify:\tPlay music .....");
+        spotify.setVolume(100, myDevices->id);
+        delay(150);
         webSocket.sendTXT(0, "p:Go");
 
         Serial.println("MiniDisc:\tStart recording");
-        delay(150);
         trackMarkTime = myTOC.getTrackDuration(trackDurationIndex++) + millis();
-        spotify.setVolume(100, myDevices->id);
+        delay(5); // TIME THIS DELAY //
         slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_PLAY);
-        stateToken = 5; // Start to send track marks
-        break;
+        stateToken = 5;  // Start to send track marks
       }
-    case 5: // Setting track marks according to spotify track length since this is more
-      {     // reliable than letting new track detection in the MD recorder do it.
+      break;
+    case 5:  // Setting track marks according to spotify track length since this is more
+      {      // reliable than letting new track detection in the MD recorder do it.
         if (millis() > trackMarkTime) {
           if (trackDurationIndex > myTOC.getNoTracks()) {
             slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_STOP);
             Serial.println("Recording done!");
             trackDurationIndex = 1;
             stateToken = 0;
+            webSocket.sendTXT(0, "x:All done.");
           } else {
             slink.sendCommand(SLINK_DEVICE_MD, SLINK_CMD_MD_REC_PAUSE);
             trackMarkTime = myTOC.getTrackDuration(trackDurationIndex++) + millis();
           }
         }
-        break;
       }
-    case 4: // Write TOC to MD
+      break;
+    case 4:  // Write TOC to MD
       {
         Serial.println("-- Writing TOC to MiniDisc --");
         Serial.println("------------ Album -----------");
         // Write Disk Title
         Serial.println(myTOC.getAlbumName());
-        if (!slink.writeDiskTitle( myTOC.getAlbumName())) {
+        if (!slink.writeDiskTitle(myTOC.getAlbumName())) {
           Serial.println("!! Failed to write Album name");
           break;
         }
@@ -280,7 +322,7 @@ loop() {
           Serial.print(myTOC.getTrackName(i));
           Serial.print(": ");
           Serial.println(myTOC.getTrackDuration(i));
-          if (!slink.writeTrackTitle( i, myTOC.getTrackName(i) )) {
+          if (!slink.writeTrackTitle(i, myTOC.getTrackName(i))) {
             Serial.print("!! Failed to write title number ");
             Serial.println(i);
             break;
@@ -288,19 +330,19 @@ loop() {
         }
         Serial.printf("------------\nNumber of tracks: %d\n\n", myTOC.getNoTracks());
         stateToken = 0;
-        break;
       }
+      break;
     case 7:
       {
         Serial.println("Checking if Token need refresh.");
         spotify.checkAndRefreshAccessToken();
         sendTokens();
         stateToken = 0;
-        break;
       }
+      break;
     default:
       break;
-  }
+  }  // switch()
 
   webSocket.loop();
   server.handleClient();
