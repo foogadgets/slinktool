@@ -63,24 +63,25 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       {
         switch (payload[0]) {
           case '0':
-            {  // PKG RECV Album name
+            {
               uint8_t tocStatus = 0;
+              uint8_t i = 1;
+              char *pch;
+              char endMarker[2] = { 0 };
+              endMarker[0] = '\x1c';
               myTOC.clearTOC();
-              tocStatus = myTOC.setAlbumName((char *)&payload[1]);
+              pch = strtok((char *)&payload[1], endMarker);
+              tocStatus = myTOC.setAlbumName(pch);
               if (tocStatus != 0) {
                 Serial.print("setAlbumName failed! Error: ");
                 Serial.println(tocStatus);
               } else {
-                Serial.println("Album name set.");
+                Serial.print("Album: ");
+                Serial.println(pch);
               }
-            }
-            break;
-          case '1':
-            {  // PKG RECV Track names
-              uint8_t tocStatus = 0;
-              char *pch;
-              char endMarker[] = "\r\n";
-              pch = strtok((char *)&payload[1], endMarker);
+// ALBUM(0x1c)TRACK(0x1c)LENGTH(0x1c) ... TRACK(0x1c)LENGTH(0x1c)
+// Read track name
+              pch = strtok(NULL, endMarker);
               while (pch != NULL) {
                 tocStatus = myTOC.addTrack(pch);
                 if (tocStatus != 0) {
@@ -88,21 +89,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                   Serial.print(myTOC.getNoTracks());
                   Serial.print(" failed! Error: ");
                   Serial.println(tocStatus);
+                  break;
                 } else {
-                  Serial.println("Track added.");
+                  Serial.print("Title: ");
+                  Serial.print(pch);
                 }
+// Read track duration
                 pch = strtok(NULL, endMarker);
-              }
-            }
-            break;
-          case '2':
-            {  // PKG RECV Track duration
-              uint8_t tocStatus = 0;
-              char *pch;
-              char endMarker[] = ";";
-              uint8_t i = 1;
-              pch = strtok((char *)&payload[1], endMarker);
-              while (pch != NULL) {
                 tocStatus = myTOC.setTrackDuration(i, atol(pch));
                 if (tocStatus != 0) {
                   Serial.print("getNoTracks(): ");
@@ -111,13 +104,14 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                   Serial.print(i);
                   Serial.print(" failed! Error: ");
                   Serial.println(tocStatus);
+                  break;
                 } else {
-                  Serial.println("Track duration set.");
+                  Serial.print(", Duration: ");
+                  Serial.println(atol(pch));
                 }
                 pch = strtok(NULL, endMarker);
                 i++;
               }
-              webSocket.sendTXT(0, "m:Done");
             }
             break;
           case '3':
@@ -161,6 +155,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         } // switch(payload[0])
       }
       break;
+
     default:
       break;
   }
