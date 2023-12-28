@@ -116,10 +116,11 @@ function populateToc() {
       if ('playlist' === data.body.context.type) {
         document.getElementById('spoturi').value = data.body.context.uri;
         spotifyURI = document.getElementById('spoturi').value.split(':')[document.getElementById('spoturi').value.split(':').length - 1];
-        spotifyApi.getPlaylist(spotifyURI, { limit: 100, offset: 0 }).then(
+        spotifyApi.getPlaylist(spotifyURI, { limit: 100, offset: 0, market: 'SE' }).then(
           function (data) {
             var playTime = 0;
             var noTracks = 0;
+            var playableTracks = 0;
             var maxPlayTime = (((document.querySelector('input[name="mdLen"]:checked').value) * 60 + 59) * (document.querySelector('input[name="mdLP"]:checked').value) * 1000);
             document.getElementById('album').value = data.body.name;
             localStorage.slinktoolAlbum = document.getElementById('album').value;
@@ -128,6 +129,12 @@ function populateToc() {
             noTracks = data.body.tracks.total;
             if (noTracks > 100) { noTracks = 100; }
             for (i = 0; i < noTracks; i++) { /* iterate all tracks */
+              playableTracks += 1;
+              if (false === data.body.tracks.items[i].track.is_playable) {
+                console.log('Track', (i + 1), 'not playable');
+                playableTracks -= 1;
+                continue;
+              }
               document.getElementById('songs').value += data.body.tracks.items[i].track.name;
               localStorage.slinktoolAll += data.body.tracks.items[i].track.name;
               if ((document.querySelector('input[name="mdLP"]:checked').value) == 1) {
@@ -140,10 +147,10 @@ function populateToc() {
               playTime += data.body.tracks.items[i].track.duration_ms;
               localStorage.albumTimes += data.body.tracks.items[i].track.duration_ms.toString() + ';';
               localStorage.slinktoolAll += data.body.tracks.items[i].track.duration_ms.toString() + '\x1c';
-              if (playTime > maxPlayTime) { noTracks = i + 1; break; }
+              if (playTime > maxPlayTime) { break; }
             }
             document.getElementById('playTime').innerHTML = msToTime(playTime);
-            document.getElementById('numberOfTracks').innerHTML = noTracks;
+            document.getElementById('numberOfTracks').innerHTML = playableTracks;
             storeToLocalStore();
           },
           function (err) {
@@ -195,7 +202,7 @@ function storeToLocalStore() {
 }
 
 function sendMDToc() {
-  setTimeout( function () {
+  setTimeout(function () {
     connection.send('0' + localStorage.slinktoolAll);
   }, 1500); // >1300ms in order for slinktoolAll to be available for sending
   console.log('Sent Album, tracks and track duration.');
