@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "reconnectingwebsocket": "^1.0.0",
-    "spotify-web-api-node": "^5.0.2",
+    "spotify-web-api-node-updated": "^5.0.2",
     "xmlhttprequest": "^1.8.0"
   },
   "main": "webpack.config.js",

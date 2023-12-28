@@ -1,4 +1,4 @@
-let SpotifyWebApi = require('spotify-web-api-node');
+let SpotifyWebApi = require('spotify-web-api-node-updated');
 let ReconnectingWebSocket = require('reconnectingwebsocket');
 
 
@@ -183,7 +183,7 @@ function populateToc() {
       sendMDToc();
     },
     function (err) {
-      console.log('Something went wrong!', err);
+      console.error('Something went wrong!', err);
     }
   );
 }
