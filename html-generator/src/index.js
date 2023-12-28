@@ -198,6 +198,7 @@ function sendMDToc() {
   setTimeout( function () {
     connection.send('0' + localStorage.slinktoolAll);
   }, 1500); // >1300ms in order for slinktoolAll to be available for sending
+  console.log('Sent Album, tracks and track duration.');
 }
 
 function clearToc() {
@@ -220,3 +221,9 @@ function interruptRec() {
   console.log('Recording interrupted');
 }
 document.getElementById('stopRec').addEventListener('click', interruptRec, false);
+
+function debugPrintTOC() {
+  connection.send('1');
+  console.log('Trigger TOC print on WeMos D1 mini');
+}
+document.getElementById('debugPrintTOC').addEventListener('click', debugPrintTOC, false);

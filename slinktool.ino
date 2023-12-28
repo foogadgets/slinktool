@@ -1,8 +1,6 @@
 #include <WiFiManager.h>
-#include <strings_en.h>
 #include <wm_consts_en.h>
 #include <wm_strings_en.h>
-#include <wm_strings_es.h>
 
 #include <Arduino.h>
 #include <stdio.h>
@@ -35,6 +33,7 @@ ArduinoSpotify spotify(WiFiClient);
 Slink slink;
 SpotifyDevice *myDevices;
 static MusicAlbumTOC myTOC;
+char* msToTime(uint32_t, char*);
 
 static const char *hostName = "slinktool";
 static const char *callbackUri = "http%3A%2F%2Fslinktool.local%2Fcallback";
@@ -63,7 +62,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       {
         switch (payload[0]) {
           case '0':
-            {
+            { // ALBUM(0x1c)TRACK(0x1c)LENGTH(0x1c) ... TRACK(0x1c)LENGTH(0x1c)
               uint8_t tocStatus = 0;
               uint8_t i = 1;
               char *pch;
@@ -75,12 +74,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
               if (tocStatus != 0) {
                 Serial.print("setAlbumName failed! Error: ");
                 Serial.println(tocStatus);
-              } else {
-                Serial.print("Album: ");
-                Serial.println(pch);
+                break;
               }
-// ALBUM(0x1c)TRACK(0x1c)LENGTH(0x1c) ... TRACK(0x1c)LENGTH(0x1c)
-// Read track name
+              // Read track name
               pch = strtok(NULL, endMarker);
               while (pch != NULL) {
                 tocStatus = myTOC.addTrack(pch);
@@ -90,11 +86,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                   Serial.print(" failed! Error: ");
                   Serial.println(tocStatus);
                   break;
-                } else {
-                  Serial.print("Title: ");
-                  Serial.print(pch);
                 }
-// Read track duration
+                // Read track duration
                 pch = strtok(NULL, endMarker);
                 tocStatus = myTOC.setTrackDuration(i, atol(pch));
                 if (tocStatus != 0) {
@@ -105,12 +98,32 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                   Serial.print(" failed! Error: ");
                   Serial.println(tocStatus);
                   break;
-                } else {
-                  Serial.print(", Duration: ");
-                  Serial.println(atol(pch));
                 }
                 pch = strtok(NULL, endMarker);
                 i++;
+              }
+              Serial.println("TOC received");
+              webSocket.sendTXT(0, "m:TOC received");
+            }
+            break;
+          case '1':
+            {  // Debug: print TOC
+              char theTime[7] = { NULL };
+              uint8_t noTracks = 0;
+              Serial.println("Dumping TOC");
+              Serial.print("Album: ");
+              if(myTOC.getAlbumName() == NULL) { break; }
+              Serial.println(myTOC.getAlbumName());
+              noTracks = myTOC.getNoTracks();
+              if (noTracks == 0) { break; }
+              Serial.print("Number of tracks: ");
+              Serial.println(noTracks);
+              for (uint8_t i=1; i<=noTracks; i++) {
+                Serial.print(i);
+                Serial.print(". ");
+                Serial.print(myTOC.getTrackName(i));
+                Serial.print(", ");
+                Serial.println(msToTime(myTOC.getTrackDuration(i), theTime));
               }
             }
             break;
@@ -159,6 +172,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     default:
       break;
   }
+}
+
+char* msToTime(uint32_t s, char* retString) {
+  char time[4] = { NULL };
+  uint32_t ms = s % 1000;
+  s = (s - ms) / 1000;
+  uint8_t secs = s % 60;
+  uint8_t mins = (s - secs) / 60;
+  strcpy(retString, utoa(mins, time, 10));
+  (secs<10) ? strncat(retString, ":0", 2) : strncat(retString, ":", 1);
+  strcat(retString, utoa(secs, time, 10));
+
+  return retString;
 }
 
 void sendTokens() {
