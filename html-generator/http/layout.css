@@ -28,8 +28,8 @@ body {
 }
 
 .graphics img {
-  width:400px;
-  height:400px;
+  width: 400px;
+  height: 400px;
 }
 
 .bottomleft {
@@ -37,4 +37,3 @@ body {
   bottom: 5px;
   right: 16px;
 }
-

@@ -1,1 +1,1 @@
-var wsUri = 'ws://192.168.1.179:81/';
+var wsUri = 'ws://slinktool.local:81/';

@@ -1,42 +1,45 @@
 <!DOCTYPE HTML>
 <html>
-  <head>
-    <title>foogadgets SLink Tool</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      GURKMAJO
-    </style>
-  </head>
-  <body>
-<div class="content">
-	<h1>SLink Tool</h1>
-	<p>
-  <form>
-    <b>1. Select MD length:</b>
+
+<head>
+  <title>foogadgets SLink Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    GURKMAJO
+  </style>
+</head>
+
+<body>
+  <div class="content">
+    <h1>SLink Tool</h1>
+    <p>
+    <form>
+      <b>1. Select MD length:</b>
       <input type="radio" name="mdLen" value="60">60m
       <input type="radio" name="mdLen" value="74" checked>74m
       <input type="radio" name="mdLen" value="80">80m
       <input type="radio" name="mdLen" value="999">No limit
-  </form>
-  <form>
-    <b>2. Select MD quality:</b>
+    </form>
+    <form>
+      <b>2. Select MD quality:</b>
       <input type="radio" name="mdLP" value="1" checked>SP
       <input type="radio" name="mdLP" value="2">LP2
       <input type="radio" name="mdLP" value="4">LP4
-  </form>
-	<div class="albuminfo">
+    </form>
+    <div class="albuminfo">
       <b>Number of tracks: </b><label id="numberOfTracks" for="numberOfTracks"></label><br>
       <b>Total playtime: </b><label id="playTime" for="playTime"></label>
-	</div>
-	<p>
-  <form>
-      <b>3.</b> <button type=button id="populateToc">Populate TOC from Spotify</button><p>
-      <b>4.</b> <button type=button id="recordSpotify">Auto record from Spotify</button>
-                <button type=button id="stopRec">Interrupt Recording</button>
-	  <input type="hidden" id="spoturi" size="42">
-  </form>
-	<p>
-  <form>
+    </div>
+    <p>
+    <form>
+      <b>3.</b> <button type=button id="populateToc">Populate TOC from Spotify</button>
+      <p>
+        <b>4.</b> <button type=button id="recordSpotify">Auto record from Spotify</button>
+        <button type=button id="stopRec">Interrupt Recording</button>
+        <input type="hidden" id="spoturi" size="42">
+    </form>
+    <p>
+    <form>
       <b>Table of contents</b><br>
       <input type="text" id="album" size="64" required placeholder="Artist name - Album name"></input>
       <br>
@@ -46,29 +49,28 @@
       <br><br>
       <b>5.</b> <button type="button" id="writeTocMd">Write TOC to MiniDisc</button>
       <tr>
-      <button type="button" id="clearToc">Clear TOC</button>
+        <button type="button" id="clearToc">Clear TOC</button>
 
-  </form>
-      <br><br>
-      <button type="button" id="debugPrintTOC">DEBUG: Make WeMos print TOC</button>
-      <br><br>
-	<div class="albuminfo">
-      <a href="http://slinktool.local/login">Spotify login</a>  
-	</div>
+    </form>
+    <br><br>
+    <button type="button" id="debugPrintTOC">DEBUG: Make WeMos print TOC</button>
+    <br><br>
+    <div class="albuminfo">
+      <a href="http://slinktool.local/login">Spotify login</a>
+    </div>
+  </div>
 
-      <script>
-        HEPPELEPPE;
-      </script>
-</div>
+  <div class="graphics">
+    <b>Album/Playlist image: </b><br><img id="imageUrl" src="">
 
-<div class="graphics">
-      <b>Album/Playlist image: </b><br><img id="imageUrl" src="">
+    <div class=bottomleft>
+      <b>&copy; foogadgets 2024</b>
+    </div>
 
-      <div class=bottomleft>
-          <b>&copy; foogadgets 2024</b>
-      </div>
+  </div>
+  <script>
+    HEPPELEPPE;
+  </script>
+</body>
 
-</div>
-
-  </body>
 </html>
